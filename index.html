@@ -15,7 +15,6 @@
 
   canvas {
     display: block;
-    margin: 0 auto;
     background: #111827;
   }
 
@@ -48,7 +47,7 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// 📏 RESIZE CORRETO
+// 📏 Resize correto
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -56,50 +55,66 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
-// 🎨 IMAGENS
+// 🎨 Imagens
 const playerImg = new Image();
-playerImg.src = "player.png";
-
 const wallImg = new Image();
+
+playerImg.src = "player.png";
 wallImg.src = "wall.png";
 
-// 📦 PLAYER (agora proporcional)
-let player = {
-  x: canvas.width / 2,
-  y: canvas.height - 120,
-  size: Math.min(canvas.width, canvas.height) * 0.06,
-  speed: 6
-};
+// 🔒 Garante que tudo carregou antes de começar
+let loaded = 0;
+function checkStart() {
+  loaded++;
+  if (loaded === 2) startGame();
+}
 
-let keys = {};
-let alive = true;
+playerImg.onload = checkStart;
+wallImg.onload = checkStart;
 
-let score = 0;
-let wave = 1;
+// 🎮 Variáveis do jogo
+let player, wall, keys, score, wave, alive;
 
-// 🧱 WALL (proporcional)
-let wall = {
-  y: -150,
-  speed: 3,
-  gapX: 0,
-  gapW: canvas.width * 0.2,
-  height: canvas.height * 0.08
-};
+// 🚀 Início do jogo (só depois das imagens carregarem)
+function startGame() {
 
+  player = {
+    x: canvas.width / 2,
+    y: canvas.height - 120,
+    size: Math.min(canvas.width, canvas.height) * 0.06,
+    speed: 6
+  };
+
+  wall = {
+    y: -150,
+    speed: 3,
+    gapX: 0,
+    gapW: canvas.width * 0.2,
+    height: canvas.height * 0.08
+  };
+
+  keys = {};
+  score = 0;
+  wave = 1;
+  alive = true;
+
+  document.addEventListener("keydown", e => keys[e.key] = true);
+  document.addEventListener("keyup", e => keys[e.key] = false);
+
+  newWave();
+  loop();
+}
+
+// 🧱 Nova onda
 function newWave() {
   wall.y = -150;
   wall.speed += 0.3;
-
   wall.gapW = Math.max(120, canvas.width * 0.2 - wave * 5);
   wall.gapX = Math.random() * (canvas.width - wall.gapW);
-
   wave++;
 }
 
-// 🎮 CONTROLES
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
-
+// 🎮 Atualização
 function update() {
   if (!alive) return;
 
@@ -135,10 +150,11 @@ function update() {
     `Pontos: ${score} | Onda: ${wave}`;
 }
 
+// 🎨 Desenho
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 🧱 parede
+  // parede esquerda e direita
   ctx.drawImage(wallImg, 0, wall.y, wall.gapX, wall.height);
   ctx.drawImage(
     wallImg,
@@ -148,18 +164,16 @@ function draw() {
     wall.height
   );
 
-  // 👤 player
+  // player
   ctx.drawImage(playerImg, player.x, player.y, player.size, player.size);
 }
 
+// 🔁 Loop principal
 function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
 }
-
-newWave();
-loop();
 </script>
 
 </body>
