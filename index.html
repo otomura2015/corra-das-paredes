@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Fuja da Tela - Sprites</title>
+
 <style>
   body {
     margin: 0;
@@ -35,6 +36,7 @@
   }
 </style>
 </head>
+
 <body>
 
 <div id="hud">Pontos: 0 | Onda: 1</div>
@@ -46,8 +48,13 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// 📏 RESIZE CORRETO
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
 
 // 🎨 IMAGENS
 const playerImg = new Image();
@@ -56,11 +63,12 @@ playerImg.src = "player.png";
 const wallImg = new Image();
 wallImg.src = "wall.png";
 
+// 📦 PLAYER (agora proporcional)
 let player = {
   x: canvas.width / 2,
   y: canvas.height - 120,
-  size: 50,
-  speed: 5
+  size: Math.min(canvas.width, canvas.height) * 0.06,
+  speed: 6
 };
 
 let keys = {};
@@ -69,23 +77,26 @@ let alive = true;
 let score = 0;
 let wave = 1;
 
+// 🧱 WALL (proporcional)
 let wall = {
   y: -150,
   speed: 3,
   gapX: 0,
-  gapW: 200,
-  height: 80
+  gapW: canvas.width * 0.2,
+  height: canvas.height * 0.08
 };
 
 function newWave() {
   wall.y = -150;
   wall.speed += 0.3;
-  wall.gapW = Math.max(120, 240 - wave * 10);
+
+  wall.gapW = Math.max(120, canvas.width * 0.2 - wave * 5);
   wall.gapX = Math.random() * (canvas.width - wall.gapW);
 
   wave++;
 }
 
+// 🎮 CONTROLES
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
@@ -127,12 +138,17 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 🧱 parede (imagem)
+  // 🧱 parede
   ctx.drawImage(wallImg, 0, wall.y, wall.gapX, wall.height);
-  ctx.drawImage(wallImg, wall.gapX + wall.gapW, wall.y,
-                 canvas.width - (wall.gapX + wall.gapW), wall.height);
+  ctx.drawImage(
+    wallImg,
+    wall.gapX + wall.gapW,
+    wall.y,
+    canvas.width - (wall.gapX + wall.gapW),
+    wall.height
+  );
 
-  // 👤 player (imagem)
+  // 👤 player
   ctx.drawImage(playerImg, player.x, player.y, player.size, player.size);
 }
 
